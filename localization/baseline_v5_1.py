@@ -576,6 +576,17 @@ def run_v5_1(reference_path, search_path):
     print("=" * 75)
 
 
+    return {
+        "x": final_x,
+        "y": final_y,
+        "score": v1_score,
+        "score_gap": score_gap,
+        "used_v1": use_v1,
+        "structural_score": structural_best["structural"],
+        "structural_improvement": structural_improvement,
+    }
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
