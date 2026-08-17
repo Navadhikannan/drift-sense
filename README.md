@@ -1,338 +1,479 @@
-# \# Drift-Sense
+# DRIFT-SENSE
 
-# 
+## AI-Assisted Visual Drift Localization
 
-# \## AI-Assisted Visual Drift Localization
+Drift-Sense is a computer-vision-based visual localization system designed to identify the position of a reference pattern inside a search image.
 
-# 
+The project combines classical computer vision techniques with an AI-based candidate reranking approach to improve localization accuracy, particularly in visually ambiguous and noisy conditions.
 
-# Drift-Sense is a computer-vision and machine-learning pipeline for locating a reference visual pattern inside a larger search image.
+---
+
+## Project Overview
 
-# 
+Traditional template matching generally selects the candidate location with the highest similarity score.
 
-# The project starts with classical template matching and progressively improves localization using structural verification, spatial candidate analysis, and an AI-based relative candidate reranker.
+However, visually similar regions may produce high matching scores even when they are not the correct target. This can result in significant localization errors.
 
-# 
+Drift-Sense addresses this problem by generating multiple candidate locations and evaluating them using both visual features and relative candidate information.
 
-# \---
+The proposed AI-V2 system uses a Random Forest model to rerank candidate locations based on their relative characteristics.
 
-# 
+### Core Concept
 
-# \## Project Objective
+Instead of asking:
 
-# 
+> Which candidate has the highest absolute similarity?
 
-# The objective of Drift-Sense is to estimate the `(X, Y)` position of a reference object or visual pattern inside a search image while remaining robust to image noise and ambiguous template matches.
+Drift-Sense AI-V2 asks:
 
-# 
+> Which candidate is stronger relative to the other candidates?
 
-# The system is designed to address a key limitation of conventional template matching:
+---
 
-# 
+# Problem Statement
 
-# > A high template-matching score does not always correspond to the correct physical location.
+Visual localization is the process of determining the position of a target or reference pattern within a larger search image.
 
-# 
+Traditional template matching can fail when:
 
-# Drift-Sense therefore generates multiple candidate locations and uses additional structural and relative features to select the most reliable candidate.
+- Multiple regions have similar visual characteristics
+- Image noise affects similarity scores
+- The strongest template match is not the true target
+- Similar structures occur at multiple locations
+- Candidate scores are close to each other
 
-# 
+Therefore, a more robust candidate-selection mechanism is required.
 
-# \---
+---
 
-# 
+# Objectives
+
+The main objectives of Drift-Sense are:
 
-# \## System Pipeline
+1. Generate candidate locations from a search image.
+2. Extract multiple visual similarity features.
+3. Evaluate candidates using classical computer vision techniques.
+4. Introduce relative candidate-ranking features.
+5. Train an AI model to distinguish stronger candidates.
+6. Estimate the final target coordinates.
+7. Evaluate localization accuracy under different noise conditions.
+8. Compare AI-assisted localization against the classical baseline.
 
-# 
+---
 
-# Reference Image
+# System Architecture
 
-# &#x20;       |
+```text
+                  ┌──────────────────┐
+                  │  Reference Image │
+                  └────────┬─────────┘
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │ Template         │
+                  │ Extraction       │
+                  └────────┬─────────┘
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │ Candidate        │
+                  │ Generation       │
+                  └────────┬─────────┘
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │ Feature          │
+                  │ Extraction       │
+                  └────────┬─────────┘
+                           │
+                           ▼
+              ┌──────────────────────────┐
+              │ Classical CV Verification│
+              └────────────┬─────────────┘
+                           │
+                           ▼
+              ┌──────────────────────────┐
+              │ AI-V2 Candidate          │
+              │ Reranking                │
+              └────────────┬─────────────┘
+                           │
+                           ▼
+              ┌──────────────────────────┐
+              │ Confidence Analysis      │
+              └────────────┬─────────────┘
+                           │
+                           ▼
+                  ┌──────────────────┐
+                  │ Final X,Y        │
+                  │ Localization     │
+                  └──────────────────┘
 
-# &#x20;       v
+---
 
-# Template Matching
+# Classical Computer Vision Pipeline
 
-# &#x20;       |
+The baseline localization system evaluates candidates using multiple visual measurements.
 
-# &#x20;       v
+Visual Features
+Template similarity
+Gray-level similarity
+Edge similarity
+Gradient similarity
+Structural similarity
+Spatial candidate information
 
-# Candidate Generation
+The classical pipeline provides the initial candidate ranking.
 
-# &#x20;       |
+The AI-V2 system then uses additional relative information to determine whether another candidate may be more reliable.
 
-# &#x20;       v
+# AI-V2 Candidate Reranking
 
-# Feature Extraction
+AI-V2 introduces a relative candidate-ranking approach.
 
-# &#x20;       |
+Rather than relying only on the absolute score of a candidate, the model considers how the candidate compares with other candidates within the same candidate group.
 
-# &#x20;       +----------------------+
+AI-V2 Features
+Feature	Description
+template_gap	Difference between candidate and best template score
+gray_gap	Relative gray-level similarity
+edge_gap	Relative edge similarity
+gradient_gap	Relative gradient similarity
+structural_gap	Relative structural similarity
+combined_score	Combined candidate similarity
+combined_gap	Relative combined-score difference
+normalized_rank	Candidate rank normalized within the group
+distance_from_template_best	Spatial distance from the template-best candidate
+nearest_candidate_distance	Distance to the nearest competing candidate
+neighborhood_density_50	Candidate density within 50 pixels
+neighborhood_density_100	Candidate density within 100 pixels
+Machine Learning Model
+
+The AI-V2 candidate reranker uses a:
 
-# &#x20;       |                      |
+Random Forest Classifier
+
+The model receives the relative candidate features and predicts the probability that a candidate represents the correct target.
+
+The candidate with the strongest AI ranking is selected for final localization.
 
-# &#x20;       v                      v
+# Dataset
 
-# Classical Scores       Spatial Features
+The AI candidate dataset contains:
 
-# &#x20;       |                      |
+30 image samples
+4 noise conditions
+30 candidates per image
+Noise Conditions
+Clean
+Low
+Medium
+High
+Dataset Statistics
+Category	Count
+Candidate rows	3,600
+Positive candidates	112
+Negative candidates	3,488
+Candidate groups	120
 
-# &#x20;       +----------+-----------+
+The final localization evaluation contains:
 
-# &#x20;                  |
+120 evaluated cases
 
-# &#x20;                  v
+Training and Testing
 
-# &#x20;         AI-V2 Candidate
+The candidate groups were divided into separate training and testing groups.
 
-# &#x20;            Reranker
+Parameter	Value
+Training groups	90
+Testing groups	30
+Training rows	2,700
+Testing rows	900
+Model	Random Forest
 
-# &#x20;                  |
+The group-based split prevents candidates from the same image/noise group from being mixed between training and testing.
 
-# &#x20;                  v
+AI-V2 Classification Performance
 
-# &#x20;         Confidence Analysis
+The trained AI-V2 candidate classifier achieved:
 
-# &#x20;                  |
+Metric	Result
+Accuracy	99.67%
+ROC-AUC	0.9994
+Positive Precision	90.00%
+Positive Recall	100.00%
+Positive F1-score	94.74%
 
-# &#x20;                  v
+These results indicate that the model can effectively distinguish positive candidates from negative candidates within the evaluation dataset.
 
-# &#x20;         Final Localization
+# Feature Importance
 
-# &#x20;                  |
+The most important AI-V2 features were:
 
-# &#x20;                  v
+Feature	Importance
+Gradient gap	23.49%
+Structural gap	22.48%
+Combined gap	15.67%
+Gray gap	11.69%
+Template gap	10.34%
+Normalized rank	5.36%
+Distance from template best	5.35%
+Edge gap	3.73%
 
-# &#x20;             (X, Y)
+Gradient and structural differences were the most influential features in the trained Random Forest model.
 
-# 
+Final Localization Benchmark
 
-# 
+The final benchmark compares the classical V5.1 baseline with AI-V2 across 120 evaluated cases.
 
-# \---
+Metric	Baseline V5.1	AI-V2
+Mean error	13.691 px	3.983 px
+Median error	1.077 px	1.053 px
+Worst error	629.048 px	71.732 px
+@1 px	41.67%	43.33%
+@2 px	88.33%	93.33%
+@5 px	88.33%	93.33%
+@20 px	88.33%	93.33%
+@50 px	93.33%	96.67%
+Overall Improvement
+Mean Localization Error
+Baseline V5.1 : 13.691 px
+AI-V2         :  3.983 px
+Mean Error Reduction
 
-# 
+70.91%
 
-# \## Development Stages
+Worst-Case Error
+Baseline V5.1 : 629.048 px
+AI-V2         :  71.732 px
+Worst-Case Error Reduction
 
-# 
+88.60%
 
-# \### V5.1 - Confidence-Aware Matching
+Major Improvement Cases
+Sample 013 — High Noise
+Baseline error : 629.048 px
+AI-V2 error    :   1.726 px
 
-# 
 
-# The first improved classical localization stage combines:
+Improvement    : 627.322 px
 
-# 
+This corresponds to approximately:
 
-# \- Template matching
+99.73% error reduction
 
-# \- Edge representation
+Sample 026
+Baseline error : 43.000 px
+AI-V2 error    :  0.200 px
 
-# \- Gradient representation
 
-# \- Structural verification
+Improvement    : 42.800 px
 
-# \- Candidate confidence
+This corresponds to approximately:
 
-# \- Conservative candidate selection
+99.53% error reduction
 
-# 
+Pass Rate Comparison
 
-# \---
+The percentage of cases within different localization error thresholds is shown below.
 
-# 
+Threshold	Baseline	AI-V2
+≤ 1 px	41.67%	43.33%
+≤ 2 px	88.33%	93.33%
+≤ 5 px	88.33%	93.33%
+≤ 20 px	88.33%	93.33%
+≤ 50 px	93.33%	96.67%
 
-# \### V5.2 - Spatially-Aware Reranking
+AI-V2 improves the pass rate at every evaluated threshold.
 
-# 
+Confidence Analysis
 
-# V5.2 introduces spatial neighborhood information.
+AI-V2 also produces candidate probabilities that can be used to estimate localization confidence.
 
-# 
+The confidence analysis classified the evaluated test groups into three categories:
 
-# Candidate locations are evaluated using:
+Confidence	Cases	Mean Error
+HIGH	28	1.633 px
+MEDIUM	1	21.900 px
+LOW	1	21.100 px
 
-# 
+Confidence is determined using the difference between the strongest and second-best candidate probabilities.
 
-# \- Original template score
+A larger probability gap indicates a more decisive candidate ranking.
 
-# \- Neighboring candidate response
+Failure Cases and Limitations
 
-# \- Spatial distribution of candidate matches
+AI-V2 does not improve every individual localization case.
 
-# 
+Across the 120 evaluated cases:
 
-# \---
+Improved : 6
+Worse    : 1
+Equal    : 113
+Difficult Case — Sample 009
 
-# 
+The AI-V2 system retains an error of approximately:
 
-# \### V5.3 - Multi-Scale Contextual Verification
+71.73 px
 
-# 
+This represents a visually ambiguous case where the correct target is difficult to distinguish from competing regions.
 
-# V5.3 introduces additional contextual verification using:
+Important Observation
 
-# 
+A high model probability does not always guarantee low localization error.
 
-# \- Local similarity
+This indicates that confidence calibration and improved visual representations are potential areas for future development.
 
-# \- Context similarity
+# Project Structure
 
-# \- Regional similarity
+drift-sense/
+│
+├── data/
+│   ├── sample_001/
+│   ├── sample_002/
+│   └── ...
+│
+├── localization/
+│   ├── baseline_v5_1.py
+│   ├── baseline_v5_2.py
+│   └── baseline_v5_3.py
+│
+├── evaluation/
+│   ├── build_ai_dataset.py
+│   ├── build_ai_v2_dataset.py
+│   ├── train_ai_reranker.py
+│   ├── train_ai_v2_reranker.py
+│   ├── evaluate_ai_reranker.py
+│   ├── evaluate_ai_v2_reranker.py
+│   ├── analyze_ai_confidence.py
+│   ├── final_benchmark.py
+│   └── generate_final_plots.py
+│
+├── results/
+│   ├── ai/
+│   ├── ai_v2/
+│   └── final_benchmark/
+│
+├── requirements.txt
+└── README.md
+Installation
 
-# \- Multi-scale information
+Clone the repository:
 
-# 
+git clone https://github.com/Navadhikannan/drift-sense.git
 
-# This stage demonstrated the limitations of purely handcrafted verification and motivated the transition toward machine learning.
+Move into the project directory:
 
-# 
+cd drift-sense
 
-# \---
+Install the required Python packages:
 
-# 
+pip install -r requirements.txt
+Running the Final Benchmark
 
-# \# AI Localization
+Run the final benchmark using:
 
-# 
+python evaluation/final_benchmark.py
 
-# \## AI-V1
+The benchmark generates:
 
-# 
+results/final_benchmark/model_comparison.csv
+results/final_benchmark/pass_rates.csv
+results/final_benchmark/sample_improvements.csv
+Generating Final Visualizations
 
-# The first AI system uses a Random Forest classifier to evaluate candidate locations.
+Run:
 
-# 
+python evaluation/generate_final_plots.py
 
-# Candidate features include:
+The plots are generated inside:
 
-# 
+results/final_benchmark/plots/
 
-# \- Template score
+The visualization stage produces:
 
-# \- Gray score
+01_mean_error_comparison.png
+02_worst_case_error.png
+03_pass_rate_comparison.png
+04_per_sample_improvement.png
+05_top_improvements.png
+Reproducing the AI-V2 Pipeline
+Step 1 — Build the candidate dataset
+python evaluation/build_ai_dataset.py
+Step 2 — Build the AI-V2 relative ranking dataset
+python evaluation/build_ai_v2_dataset.py
+Step 3 — Train the original AI reranker
+python evaluation/train_ai_reranker.py
+Step 4 — Evaluate the original AI reranker
+python evaluation/evaluate_ai_reranker.py
+Step 5 — Train AI-V2
+python evaluation/train_ai_v2_reranker.py
+Step 6 — Evaluate AI-V2 localization
+python evaluation/evaluate_ai_v2_reranker.py
+Step 7 — Analyze confidence
+python evaluation/analyze_ai_confidence.py
+Step 8 — Run the final benchmark
+python evaluation/final_benchmark.py
+Step 9 — Generate plots
+python evaluation/generate_final_plots.py
 
-# \- Edge score
+# Technologies Used
 
-# \- Gradient score
+Python
+OpenCV
+NumPy
+Pandas
+Scikit-learn
+Matplotlib
+Random Forest
+Classical Computer Vision
+Machine Learning
 
-# \- Structural score
+# Future Work
 
-# \- Candidate rank
+Future development can focus on:
 
-# \- Candidate coordinates
+Hard-negative mining
+Learned visual embeddings
+Siamese or contrastive neural networks
+Transformer-based visual localization
+Sub-pixel coordinate refinement
+Confidence calibration
+Larger and more diverse datasets
+GPU acceleration
+Real-time localization
+Improved handling of visually ambiguous regions
+Conclusion
 
-# \- Center distance
+Drift-Sense demonstrates an AI-assisted approach to visual localization by combining classical computer vision with relative candidate ranking.
 
-# 
+The AI-V2 system reduced the mean localization error from:
 
-# The model learns whether an individual candidate is likely to correspond to the ground-truth location.
+13.691 px → 3.983 px
 
-# 
+representing a:
 
-# \---
+70.91% reduction in mean localization error
 
-# 
+The worst-case error was reduced from:
 
-# \# AI-V2
+629.048 px → 71.732 px
 
-# 
+representing an:
 
-# The final AI approach uses \*\*relative candidate ranking\*\*.
+88.60% reduction in worst-case error
 
-# 
+The results demonstrate that relative candidate ranking can improve localization robustness compared with selecting candidates using the classical baseline alone.
 
-# Instead of evaluating a candidate independently, AI-V2 compares each candidate with the other candidates generated for the same image.
+# Authors
 
-# 
+Navadhikannan N
+Mohammad Abdul Rahmam F
 
-# \### AI-V2 features
+# Acknowledgement
 
-# 
+This project was developed as part of an experimental study into robust visual localization using classical computer vision and machine learning-based candidate ranking.
 
-# \- `template\_gap`
+# License
 
-# \- `gray\_gap`
-
-# \- `edge\_gap`
-
-# \- `gradient\_gap`
-
-# \- `structural\_gap`
-
-# \- `combined\_score`
-
-# \- `combined\_gap`
-
-# \- `normalized\_rank`
-
-# \- `distance\_from\_template\_best`
-
-# \- `nearest\_candidate\_distance`
-
-# \- `neighborhood\_density\_50`
-
-# \- `neighborhood\_density\_100`
-
-# 
-
-# This allows the model to learn relationships between competing candidates rather than relying only on absolute similarity scores.
-
-# 
-
-# \---
-
-# 
-
-# \# Dataset
-
-# 
-
-# The robustness evaluation contains:
-
-# 
-
-# \- 30 image samples
-
-# \- 4 noise conditions
-
-# \- Clean
-
-# \- Low noise
-
-# \- Medium noise
-
-# \- High noise
-
-# 
-
-# Total evaluation cases:
-
-# 
-
-# \*\*120\*\*
-
-# 
-
-# For AI candidate training:
-
-# 
-
-# \- 3,600 candidate rows
-
-# \- 112 positive candidates
-
-# \- 3,488 negative candidates
-
-# 
-
-# The large robustness image dataset is intentionally excluded from Git using:
-
-# 
-
-# ```text
-
-# data/robustness/
+This project is intended for academic and research purposes.
 
