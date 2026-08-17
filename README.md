@@ -107,6 +107,7 @@ The main objectives of Drift-Sense are:
                   │ Final X,Y        │
                   │ Localization     │
                   └──────────────────┘
+```
 
 ---
 
@@ -115,12 +116,12 @@ The main objectives of Drift-Sense are:
 The baseline localization system evaluates candidates using multiple visual measurements.
 
 Visual Features
-Template similarity
-Gray-level similarity
-Edge similarity
-Gradient similarity
-Structural similarity
-Spatial candidate information
+- Template similarity
+- Gray-level similarity
+- Edge similarity
+- Gradient similarity
+- Structural similarity
+- Spatial candidate information
 
 The classical pipeline provides the initial candidate ranking.
 
@@ -133,19 +134,22 @@ AI-V2 introduces a relative candidate-ranking approach.
 Rather than relying only on the absolute score of a candidate, the model considers how the candidate compares with other candidates within the same candidate group.
 
 AI-V2 Features
-Feature	Description
-template_gap	Difference between candidate and best template score
-gray_gap	Relative gray-level similarity
-edge_gap	Relative edge similarity
-gradient_gap	Relative gradient similarity
-structural_gap	Relative structural similarity
-combined_score	Combined candidate similarity
-combined_gap	Relative combined-score difference
-normalized_rank	Candidate rank normalized within the group
-distance_from_template_best	Spatial distance from the template-best candidate
-nearest_candidate_distance	Distance to the nearest competing candidate
-neighborhood_density_50	Candidate density within 50 pixels
-neighborhood_density_100	Candidate density within 100 pixels
+
+| Feature | Description |
+|---|---|
+| template_gap | Difference between candidate and best template score |
+| gray_gap | Relative gray-level similarity |
+| edge_gap | Relative edge similarity |
+| gradient_gap | Relative gradient similarity |
+| structural_gap | Relative structural similarity |
+| combined_score | Combined candidate similarity |
+| combined_gap | Relative combined-score difference |
+| normalized_rank | Candidate rank normalized within the group |
+| distance_from_template_best | Spatial distance from the template-best candidate |
+| nearest_candidate_distance | Distance to the nearest competing candidate |
+| neighborhood_density_50 | Candidate density within 50 pixels |
+| neighborhood_density_100 | Candidate density within 100 pixels |
+
 Machine Learning Model
 
 The AI-V2 candidate reranker uses a:
@@ -160,20 +164,24 @@ The candidate with the strongest AI ranking is selected for final localization.
 
 The AI candidate dataset contains:
 
-30 image samples
-4 noise conditions
-30 candidates per image
+- 30 image samples
+- 4 noise conditions
+- 30 candidates per image
+
 Noise Conditions
-Clean
-Low
-Medium
-High
+- Clean
+- Low
+- Medium
+- High
+
 Dataset Statistics
-Category	Count
-Candidate rows	3,600
-Positive candidates	112
-Negative candidates	3,488
-Candidate groups	120
+
+| Category | Count |
+|---|---|
+| Candidate rows | 3,600 |
+| Positive candidates | 112 |
+| Negative candidates | 3,488 |
+| Candidate groups | 120 |
 
 The final localization evaluation contains:
 
@@ -183,12 +191,13 @@ Training and Testing
 
 The candidate groups were divided into separate training and testing groups.
 
-Parameter	Value
-Training groups	90
-Testing groups	30
-Training rows	2,700
-Testing rows	900
-Model	Random Forest
+| Parameter | Value |
+|---|---|
+| Training groups | 90 |
+| Testing groups | 30 |
+| Training rows | 2,700 |
+| Testing rows | 900 |
+| Model | Random Forest |
 
 The group-based split prevents candidates from the same image/noise group from being mixed between training and testing.
 
@@ -196,12 +205,13 @@ AI-V2 Classification Performance
 
 The trained AI-V2 candidate classifier achieved:
 
-Metric	Result
-Accuracy	99.67%
-ROC-AUC	0.9994
-Positive Precision	90.00%
-Positive Recall	100.00%
-Positive F1-score	94.74%
+| Metric | Result |
+|---|---|
+| Accuracy | 99.67% |
+| ROC-AUC | 0.9994 |
+| Positive Precision | 90.00% |
+| Positive Recall | 100.00% |
+| Positive F1-score | 94.74% |
 
 These results indicate that the model can effectively distinguish positive candidates from negative candidates within the evaluation dataset.
 
@@ -209,15 +219,16 @@ These results indicate that the model can effectively distinguish positive candi
 
 The most important AI-V2 features were:
 
-Feature	Importance
-Gradient gap	23.49%
-Structural gap	22.48%
-Combined gap	15.67%
-Gray gap	11.69%
-Template gap	10.34%
-Normalized rank	5.36%
-Distance from template best	5.35%
-Edge gap	3.73%
+| Feature | Importance |
+|---|---|
+| Gradient gap | 23.49% |
+| Structural gap | 22.48% |
+| Combined gap | 15.67% |
+| Gray gap | 11.69% |
+| Template gap | 10.34% |
+| Normalized rank | 5.36% |
+| Distance from template best | 5.35% |
+| Edge gap | 3.73% |
 
 Gradient and structural differences were the most influential features in the trained Random Forest model.
 
@@ -225,35 +236,40 @@ Final Localization Benchmark
 
 The final benchmark compares the classical V5.1 baseline with AI-V2 across 120 evaluated cases.
 
-Metric	Baseline V5.1	AI-V2
-Mean error	13.691 px	3.983 px
-Median error	1.077 px	1.053 px
-Worst error	629.048 px	71.732 px
-@1 px	41.67%	43.33%
-@2 px	88.33%	93.33%
-@5 px	88.33%	93.33%
-@20 px	88.33%	93.33%
-@50 px	93.33%	96.67%
+| Metric | Baseline V5.1 | AI-V2 |
+|---|---|---|
+| Mean error | 13.691 px | 3.983 px |
+| Median error | 1.077 px | 1.053 px |
+| Worst error | 629.048 px | 71.732 px |
+| @1 px | 41.67% | 43.33% |
+| @2 px | 88.33% | 93.33% |
+| @5 px | 88.33% | 93.33% |
+| @20 px | 88.33% | 93.33% |
+| @50 px | 93.33% | 96.67% |
+
 Overall Improvement
+
 Mean Localization Error
-Baseline V5.1 : 13.691 px
-AI-V2         :  3.983 px
+- Baseline V5.1 : 13.691 px
+- AI-V2         :  3.983 px
+
 Mean Error Reduction
 
 70.91%
 
 Worst-Case Error
-Baseline V5.1 : 629.048 px
-AI-V2         :  71.732 px
+- Baseline V5.1 : 629.048 px
+- AI-V2         :  71.732 px
+
 Worst-Case Error Reduction
 
 88.60%
 
 Major Improvement Cases
-Sample 013 — High Noise
-Baseline error : 629.048 px
-AI-V2 error    :   1.726 px
 
+Sample 013 — High Noise
+- Baseline error : 629.048 px
+- AI-V2 error    :   1.726 px
 
 Improvement    : 627.322 px
 
@@ -262,9 +278,8 @@ This corresponds to approximately:
 99.73% error reduction
 
 Sample 026
-Baseline error : 43.000 px
-AI-V2 error    :  0.200 px
-
+- Baseline error : 43.000 px
+- AI-V2 error    :  0.200 px
 
 Improvement    : 42.800 px
 
@@ -276,12 +291,13 @@ Pass Rate Comparison
 
 The percentage of cases within different localization error thresholds is shown below.
 
-Threshold	Baseline	AI-V2
-≤ 1 px	41.67%	43.33%
-≤ 2 px	88.33%	93.33%
-≤ 5 px	88.33%	93.33%
-≤ 20 px	88.33%	93.33%
-≤ 50 px	93.33%	96.67%
+| Threshold | Baseline | AI-V2 |
+|---|---|---|
+| ≤ 1 px | 41.67% | 43.33% |
+| ≤ 2 px | 88.33% | 93.33% |
+| ≤ 5 px | 88.33% | 93.33% |
+| ≤ 20 px | 88.33% | 93.33% |
+| ≤ 50 px | 93.33% | 96.67% |
 
 AI-V2 improves the pass rate at every evaluated threshold.
 
@@ -291,10 +307,11 @@ AI-V2 also produces candidate probabilities that can be used to estimate localiz
 
 The confidence analysis classified the evaluated test groups into three categories:
 
-Confidence	Cases	Mean Error
-HIGH	28	1.633 px
-MEDIUM	1	21.900 px
-LOW	1	21.100 px
+| Confidence | Cases | Mean Error |
+|---|---|---|
+| HIGH | 28 | 1.633 px |
+| MEDIUM | 1 | 21.900 px |
+| LOW | 1 | 21.100 px |
 
 Confidence is determined using the difference between the strongest and second-best candidate probabilities.
 
@@ -306,9 +323,10 @@ AI-V2 does not improve every individual localization case.
 
 Across the 120 evaluated cases:
 
-Improved : 6
-Worse    : 1
-Equal    : 113
+- Improved : 6
+- Worse    : 1
+- Equal    : 113
+
 Difficult Case — Sample 009
 
 The AI-V2 system retains an error of approximately:
@@ -325,6 +343,7 @@ This indicates that confidence calibration and improved visual representations a
 
 # Project Structure
 
+```text
 drift-sense/
 │
 ├── data/
@@ -355,35 +374,49 @@ drift-sense/
 │
 ├── requirements.txt
 └── README.md
+```
+
 Installation
 
 Clone the repository:
 
+```
 git clone https://github.com/Navadhikannan/drift-sense.git
+```
 
 Move into the project directory:
 
+```
 cd drift-sense
+```
 
 Install the required Python packages:
 
+```
 pip install -r requirements.txt
+```
+
 Running the Final Benchmark
 
 Run the final benchmark using:
 
+```
 python evaluation/final_benchmark.py
+```
 
 The benchmark generates:
 
-results/final_benchmark/model_comparison.csv
-results/final_benchmark/pass_rates.csv
-results/final_benchmark/sample_improvements.csv
+- results/final_benchmark/model_comparison.csv
+- results/final_benchmark/pass_rates.csv
+- results/final_benchmark/sample_improvements.csv
+
 Generating Final Visualizations
 
 Run:
 
+```
 python evaluation/generate_final_plots.py
+```
 
 The plots are generated inside:
 
@@ -391,57 +424,86 @@ results/final_benchmark/plots/
 
 The visualization stage produces:
 
-01_mean_error_comparison.png
-02_worst_case_error.png
-03_pass_rate_comparison.png
-04_per_sample_improvement.png
-05_top_improvements.png
+- 01_mean_error_comparison.png
+- 02_worst_case_error.png
+- 03_pass_rate_comparison.png
+- 04_per_sample_improvement.png
+- 05_top_improvements.png
+
 Reproducing the AI-V2 Pipeline
+
 Step 1 — Build the candidate dataset
+```
 python evaluation/build_ai_dataset.py
+```
+
 Step 2 — Build the AI-V2 relative ranking dataset
+```
 python evaluation/build_ai_v2_dataset.py
+```
+
 Step 3 — Train the original AI reranker
+```
 python evaluation/train_ai_reranker.py
+```
+
 Step 4 — Evaluate the original AI reranker
+```
 python evaluation/evaluate_ai_reranker.py
+```
+
 Step 5 — Train AI-V2
+```
 python evaluation/train_ai_v2_reranker.py
+```
+
 Step 6 — Evaluate AI-V2 localization
+```
 python evaluation/evaluate_ai_v2_reranker.py
+```
+
 Step 7 — Analyze confidence
+```
 python evaluation/analyze_ai_confidence.py
+```
+
 Step 8 — Run the final benchmark
+```
 python evaluation/final_benchmark.py
+```
+
 Step 9 — Generate plots
+```
 python evaluation/generate_final_plots.py
+```
 
 # Technologies Used
 
-Python
-OpenCV
-NumPy
-Pandas
-Scikit-learn
-Matplotlib
-Random Forest
-Classical Computer Vision
-Machine Learning
+- Python
+- OpenCV
+- NumPy
+- Pandas
+- Scikit-learn
+- Matplotlib
+- Random Forest
+- Classical Computer Vision
+- Machine Learning
 
 # Future Work
 
 Future development can focus on:
 
-Hard-negative mining
-Learned visual embeddings
-Siamese or contrastive neural networks
-Transformer-based visual localization
-Sub-pixel coordinate refinement
-Confidence calibration
-Larger and more diverse datasets
-GPU acceleration
-Real-time localization
-Improved handling of visually ambiguous regions
+- Hard-negative mining
+- Learned visual embeddings
+- Siamese or contrastive neural networks
+- Transformer-based visual localization
+- Sub-pixel coordinate refinement
+- Confidence calibration
+- Larger and more diverse datasets
+- GPU acceleration
+- Real-time localization
+- Improved handling of visually ambiguous regions
+
 Conclusion
 
 Drift-Sense demonstrates an AI-assisted approach to visual localization by combining classical computer vision with relative candidate ranking.
@@ -466,8 +528,8 @@ The results demonstrate that relative candidate ranking can improve localization
 
 # Authors
 
-Navadhikannan N
-Mohammad Abdul Rahmam F
+- Navadhikannan N
+- Mohammad Abdul Rahmam F
 
 # Acknowledgement
 
@@ -476,4 +538,3 @@ This project was developed as part of an experimental study into robust visual l
 # License
 
 This project is intended for academic and research purposes.
-
